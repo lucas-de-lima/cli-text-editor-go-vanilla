@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 
@@ -25,25 +26,48 @@ func readFilePath(fp string) (string, error) {
 	return string(data), nil
 }
 
+func findOccurrences(text, sub string) []int {
+	var positions []int
+	offset := 0
+	for {
+		idx := strings.Index(text[offset:], sub)
+		if idx == -1 {
+			break
+		}
+		positions = append(positions, offset+idx)
+		offset += idx + len(sub)
+	}
+	return positions
+}
+
+func replaceText(text, old, new string, replaceAll bool) string {
+	if replaceAll {
+		return strings.ReplaceAll(text, old, new)
+	}
+	return strings.Replace(text, old, new, 1)
+}
+
 func main() {
 	fmt.Println("CLI Text Editor - Go vanilla!")
+
 	filePath := "./document.txt"
-
-	// fileData, err := readFilePath(filePath)
-	// if err != nil {
-	// 	fmt.Println("Fail to read file")
-	// }
-	// if fileData == "" {
-	// 	fmt.Println("Empty File!")
-	// }
-
-	// fmt.Println("Archive content: ", fileData)
-	fmt.Println("________________________________")
-
-	newContentToWrite := "Hello, my name is Lucas!!!"
-	err := writeFile(filePath, newContentToWrite)
+	fileData, err := readFilePath(filePath)
 	if err != nil {
-		fmt.Println("Fail to write new content")
+		fmt.Println(err)
+		return
 	}
-	fmt.Println("Success to write new content!")
+	fmt.Println("Arquivo:", fileData)
+
+	// Teste da busca
+	occ := findOccurrences(fileData, "Lucas")
+	fmt.Println("Posições de 'Lucas':", occ)
+
+	// Teste substituição
+	newContent := replaceText(fileData, "Lucas", "João", true)
+	fmt.Println("Novo conteúdo:", newContent)
+
+	// Grava o novo texto
+	if err := writeFile(filePath, newContent); err != nil {
+		fmt.Println("Erro ao salvar:", err)
+	}
 }
